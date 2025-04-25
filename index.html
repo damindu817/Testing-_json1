@@ -4,83 +4,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aviator Signal</title>
+  <title>Live Aviator Signal Viewer</title>
   <style>
     body {
-      background-color: #000;
+      background-color: #0b0b0b;
       color: #00ffff;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: sans-serif;
       text-align: center;
+      padding: 20px;
     }
     h1 {
       font-size: 1.5rem;
       margin-bottom: 20px;
+      color: #00ffff;
     }
     .label {
-      font-size: 1.1rem;
-      margin-top: 15px;
-      color: #aaa;
+      font-size: 1rem;
+      margin-top: 20px;
+      color: #ccc;
     }
     .value {
       font-size: 2rem;
       font-weight: bold;
-      margin-top: 5px;
       color: #00ff99;
+      margin-top: 5px;
     }
     footer {
       margin-top: 40px;
-      font-size: 0.9rem;
-      color: #666;
+      font-size: 0.8rem;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <h1>Aviator Signal Viewer</h1>
+  <h1>Live Aviator Signal Viewer</h1>
 
-  <div class="label">Date</div>
+  <div class="label">Today:</div>
   <div id="currentDate" class="value">--</div>
 
-  <div class="label">Time</div>
+  <div class="label">Current Time:</div>
   <div id="currentTime" class="value">--</div>
 
-  <div class="label">Next Signal</div>
+  <div class="label">Next Signal Time:</div>
   <div id="signalTime" class="value">--</div>
+
+  <div class="label">Odd Value:</div>
+  <div id="oddValue" class="value">--</div>
 
   <footer>POWERED BY XTREME PREDICTOR © 2025</footer>
 
   <script>
-    function updateTime() {
+    function updateDateTime() {
       const now = new Date();
       document.getElementById("currentDate").textContent = now.toLocaleDateString();
       document.getElementById("currentTime").textContent = now.toLocaleTimeString();
     }
 
-    function loadSignalTime() {
+    function loadSignal() {
       fetch("signals.json?t=" + Date.now())
         .then(res => res.json())
         .then(data => {
           const today = new Date().toISOString().split("T")[0];
           const now = new Date();
-          const currentTime = now.toTimeString().substring(0, 8);
-          const entry = data[today];
+          const currentTime = now.toTimeString().split(" ")[0];
 
+          const entry = data[today];
           if (entry) {
-            const nextTime = entry.times.find(t => t > currentTime) || "Completed";
-            document.getElementById("signalTime").textContent = nextTime;
+            const next = entry.times.find(t => t > currentTime) || "Completed";
+            document.getElementById("signalTime").textContent = next;
+            document.getElementById("oddValue").textContent = entry.odd || "--";
           } else {
             document.getElementById("signalTime").textContent = "--";
+            document.getElementById("oddValue").textContent = "--";
           }
+        })
+        .catch(err => {
+          document.getElementById("signalTime").textContent = "Error loading data";
+          document.getElementById("oddValue").textContent = "--";
         });
     }
 
     setInterval(() => {
-      updateTime();
-      loadSignalTime();
+      updateDateTime();
+      loadSignal();
     }, 5000);
 
-    updateTime();
-    loadSignalTime();
+    updateDateTime();
+    loadSignal();
   </script>
 </body>
 </html>
